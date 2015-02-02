@@ -159,7 +159,7 @@ void TNIBs::AddCasc(const TStr& CascStr, const TModel& Model) {
     
 	
 	GetNodeInfo(NIdV[0].GetInt()).Vol = GetNodeInfo(NIdV[0].GetInt()).Vol + 1;
-	C.Add(NIdV[0].GetInt(), NIdV[0].GetInt());
+	C.Add(NIdV[0].GetInt(), NIdV[1].GetFlt(), -1);
 	
 	
 	for (int i = 2; i < NIdV.Len(); i+=3) {
@@ -1337,6 +1337,8 @@ void TNIBs::runSG(const int& Iters, const TFltV& Steps, const TSampling& Samplin
     	
     	  printf("%d different cascades have been sampled for step %f!\n", SampledCascades.Len(), Steps[t].Val);
     	
+		  
+		  /*
     	  // For alphas that did not get updated, copy last alpha value * aging factor
     	  int unchanged = 0;
     	  for (TStrFltFltHNEDNet::TEdgeI EI = InferredNetwork.BegEI(); EI < InferredNetwork.EndEI(); EI++) {
@@ -1346,7 +1348,9 @@ void TNIBs::runSG(const int& Iters, const TFltV& Steps, const TSampling& Samplin
     	    unchanged++;
     	  }
     	  if (verbose) { printf("%d transmission rates that did not changed were 'aged' by %f!\n", unchanged, Aging.Val); }
-    	
+    	  
+		  */
+		  
     	  // compute performance on-the-fly
     	  //if (PlotPerformance) { ComputePerformanceNId(NId, t, Steps); }
     	}
@@ -1358,10 +1362,19 @@ void TNIBs::runSG(const int& Iters, const TFltV& Steps, const TSampling& Samplin
 
 void TNIBs::UpdateForCascade(const TOptMethod& OptMethod, TCascade& Cascade, const double& CurrentTime)
 {
+	TempNetwork.Clr();
 	
-
-
-
+    TCascade &C = Cascade;
+    for (THash<TInt, THitInfo>::TIter NI = C.NIdHitH.BegI(); NI < C.NIdHitH.EndI(); NI++) {
+		printf("%d,%d,%f;", NI.GetDat().Parent.Val, NI.GetDat().NId.Val, NI.GetDat().Tm.Val);
+    	
+	
+	}
+	
+	
+	
+	
+	printf("\n");
 
 	return;
 }

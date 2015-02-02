@@ -75,7 +75,7 @@ public:
   THitInfo(const int& NodeId=-1, const double& HitTime=0, const int& Prt = -1) : NId(NodeId), Tm(HitTime),Parent(Prt) { }
   THitInfo(TSIn& SIn) : NId(SIn), Tm(SIn), Keywords(SIn) { }
   void AddKeyword(const int& KId) { Keywords.AddUnique(KId); }
-  void DelKeywords() { Keywords.Clr(); }
+  void DelKeywords() { Keywords.Clr(); };
   void Save(TSOut& SOut) const { NId.Save(SOut); Tm.Save(SOut); Keywords.Save(SOut); }
   bool operator < (const THitInfo& Hit) const {
     return Tm < Hit.Tm; }
@@ -140,7 +140,8 @@ public:
 
   // network
   TStrFltFltHNEDNet Network;
-
+  TStrFltFltHNEDNet TempNetwork;
+  
   // pairwise transmission model
   TModel Model;
 

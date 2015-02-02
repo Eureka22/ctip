@@ -303,8 +303,21 @@ int main(int argc, char* argv[])
 	
 	//Run SG Globally
 	
-	NIBs.runSG(Iters, Steps, UNIF_SAMPLING, ParamSampling, PlotPerformance);
+	NIBs.InferredNetwork = NIBs.Network;
+	TFltFltH Alphas;
+	Alphas.AddDat(0.0) = 1.0;
+	// Load the ground truth backbone
+    for (TStrFltFltHNEDNet::TEdgeI EI = NIBs.InferredNetwork.BegEI(); EI < NIBs.InferredNetwork.EndEI(); EI++) 
+	{
+		//if (!NodeNmH.IsKey(EI.GetSrcNId()) || !NodeNmH.IsKey(EI.GetDstNId())) { continue; }
+        //not allowing self loops in the Kronecker network
+		NIBs.InferredNetwork.SetEDat( EI.GetSrcNId(), EI.GetDstNId(),Alphas );
+        TFltFltH getAlphas;
+		NIBs.InferredNetwork.GetEDat( EI.GetSrcNId(), EI.GetDstNId(), getAlphas);
+		printf("%d,%d,%f,%f\n", EI.GetSrcNId(), EI.GetDstNId(), EI().GetKey(0).Val, EI()[0].Val);
+    }
 	
+	NIBs.runSG(Iters, Steps, UNIF_SAMPLING, ParamSampling, PlotPerformance);
 	
     // Save inferred network in a file
     if (SaveOnlyEdges) {
@@ -346,4 +359,3 @@ int main(int argc, char* argv[])
 	printf("hello world\n");
 	return 0;
 }
-
