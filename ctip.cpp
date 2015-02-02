@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
     const double Delta = Env.GetIfArgPrefixFlt("-d:", 1.0, "Delta for power-law (default:1)\n"); // delta for power law
     const double k = Env.GetIfArgPrefixFlt("-k:", 1.0, "Shape parameter k for Weibull distribution for -m:3 (default:1)\n"); // k for weibull
 
-    const TRunningMode RunningMode = (TRunningMode)Env.GetIfArgPrefixInt("-rm:", 0,"Running mode\n0:Time step, 1:Infections step, 2:Cascade step, 3:Single time point\n");
+    const TRunningMode RunningMode = (TRunningMode)Env.GetIfArgPrefixInt("-rm:", 3, "Running mode\n0:Time step, 1:Infections step, 2:Cascade step, 3:Single time point\n");
     const double TimeStep = Env.GetIfArgPrefixFlt("-ts:", 10.0, "Minimum time step size for -rm:0 (default:10.0)\n");
     const int NumberInfections = Env.GetIfArgPrefixInt("-is:", -1, "Number of infections for -rm:1  (default:-1)\n");
 
@@ -154,11 +154,193 @@ int main(int argc, char* argv[])
       }
     }
 	
-	printf("Maxtime:%f, Mintime:%f\n", MaxTime, MinTime);
+	printf("Total %d cascades, Maxtime:%f, Mintime:%f\n", NIBs.GetCascs(), MaxTime, MinTime);
+	
+	
+    TFltV Steps;
+    int num_infections = 0;
+    TFltV InfectionsV;
+
+    // we always add 0.0 as starting point
+    Steps.Add(MinTime);
+	
+
+    // compute number of time points to compute estimation for each running mode
+    switch (RunningMode) {
+        case TIME_STEP:
+          for (float t = MinTime+TimeStep; t<=MaxTime; t += TimeStep) { Steps.Add(t); if (verbose) { printf("Time: %f\n", Steps[Steps.Len()-1].Val); } }
+          break;
+        case INFECTION_STEP:
+          // copy infections
+          if (verbose) { printf("Generating infections vector...\n"); }
+          for (int i=0; i<NIBs.GetCascs(); i++) {
+            for (int j=0; j<NIBs.CascH[i].Len() && NIBs.CascH[i].NIdHitH[j].Tm < MaxTime; j++) {
+              InfectionsV.Add(NIBs.CascH[i].NIdHitH[j].Tm);
+            }
+          }
+
+          // sort infections
+          if (verbose) { printf("Infections vector generated (%d infections)!\nSorting infections...\n", InfectionsV.Len()); }
+          InfectionsV.Sort(true);
+          if (verbose) { printf("Infections sorted!\n"); }
+
+          // generate time steps
+          for (int i=0; i<InfectionsV.Len(); i++, num_infections++) {
+            if (num_infections==NumberInfections) {
+              if (InfectionsV[i]!=Steps[Steps.Len()-1]) { Steps.Add(InfectionsV[i]); }
+              num_infections = 0;
+              if (verbose) { printf("Time: %f\n", Steps[Steps.Len()-1].Val); }
+            }
+          }
+          break;
+
+        case CASCADE_STEP:
+          for (int i=0; i<NIBs.GetCascs(); i++) {
+            if (NIBs.CascH[i].GetMaxTm()<MinTime+MaxTime) { Steps.Add(NIBs.CascH[i].GetMaxTm()); }
+          }
+
+          Steps.Sort();
+
+          if (verbose) { for (int i=0; i<Steps.Len(); i++) { printf("Time: %f\n", Steps[i].Val); } }
+          break;
+
+        case SINGLE_STEP:
+          Steps.Add(MinTime+MaxTime);
+          if (verbose) { printf("Time: %f\n", Steps[0].Val); }
+          break;
+
+        default:
+        FailR("Bad -rm: parameter.");
+
+    }
+  
+
+    // save time steps
+    TFOut FOutTimeSteps(TStr::Fmt("%s-time-steps.txt", OutFNm.CStr()));
+    for (int i=0; i<Steps.Len(); i++) { FOutTimeSteps.PutStr(TStr::Fmt("%f\n", Steps[i].Val)); }
+
+    NIBs.Init(Steps);
+
+    TIntV NIds; TStrV NIdsStr;
+    if (NodeIdx.EqI("-1")) { NIBs.Network.GetNIdV(NIds); }
+    else {
+      NodeIdx.SplitOnAllCh('-', NIdsStr);
+      for (int i=NIdsStr[0].GetInt(); i<TInt::GetMn(NIdsStr[1].GetInt(), NIBs.NodeNmH.Len()); i++) {
+        NIds.Add(NIBs.NodeNmH.GetKey(i));
+      }
+    }
 	
 	
 	
 	//Start Inferring
+	
+	
+	
+	
+	
+/*	
+	
+    for (int i=0; i<NIds.Len(); i++) {
+      TStrFltFltHNEDNet::TNodeI NI = NIBs.Network.GetNI(NIds[i]);
+      switch (TOpt) {
+          // stochastic gradient
+          case OSG:
+		    printf("Running OSG\n");
+            NIBs.SG(NI.GetId(), Iters, Steps, UNIF_SAMPLING, ParamSampling, PlotPerformance);
+            break;
+        // windowed stochastic gradient
+        case OWSG:
+            NIBs.SG(NI.GetId(), Iters, Steps, WIN_SAMPLING, ParamSampling, PlotPerformance);
+            break;
+        // exponential decay stochastic gradient
+        case OESG:
+          NIBs.SG(NI.GetId(), Iters, Steps, EXP_SAMPLING, ParamSampling, PlotPerformance);
+            break;
+            // exponential decay stochastic gradient
+        case OWESG:
+          NIBs.SG(NI.GetId(), Iters, Steps, WIN_EXP_SAMPLING, ParamSampling, PlotPerformance);
+          break;
+        // rayleigh decay stochastic gradient
+        case ORSG:
+          NIBs.SG(NI.GetId(), Iters, Steps, RAY_SAMPLING, ParamSampling, PlotPerformance);
+          break;
+            // no decay batch stochastic gradient
+          case OBSG:
+            NIBs.BSG(NI.GetId(), Iters, Steps, BatchLen, UNIF_SAMPLING, ParamSampling, PlotPerformance);
+            break;
+          // windowed stochastic gradient
+        case OWBSG:
+          NIBs.BSG(NI.GetId(), Iters, Steps, BatchLen, WIN_SAMPLING, ParamSampling, PlotPerformance);
+          break;
+          // exponential decay batch stochastic gradient
+          case OEBSG:
+            NIBs.BSG(NI.GetId(), Iters, Steps, BatchLen, EXP_SAMPLING, ParamSampling, PlotPerformance);
+            break;
+        // exponential decay batch stochastic gradient
+        case ORBSG:
+            NIBs.BSG(NI.GetId(), Iters, Steps, BatchLen, RAY_SAMPLING, ParamSampling, PlotPerformance);
+            break;
+          // full gradient
+          case OFG:
+            NIBs.FG(NI.GetId(), Iters, Steps);
+            break;
+          default :
+            FailR("Bad -s: parameter.");
+      }
+    }
+	
+*/
+	
+		
+/*    for (int i=0; i<NIds.Len(); i++) {
+      TStrFltFltHNEDNet::TNodeI NI = NIBs.Network.GetNI(NIds[i]);
+      // stochastic gradient
+      NIBs.SG(NI.GetId(), Iters, Steps, UNIF_SAMPLING, ParamSampling, PlotPerformance);
+    }
+*/
+	
+	//Run SG node-wise	
+	
+	//Run SG Globally
+	
+	NIBs.runSG(Iters, Steps, UNIF_SAMPLING, ParamSampling, PlotPerformance);
+	
+	
+    // Save inferred network in a file
+    if (SaveOnlyEdges) {
+      if (NodeIdx.EqI("-1")) {
+        NIBs.SaveInferredEdges(TStr::Fmt("%s.txt", OutFNm.CStr()));
+      } else {
+        NIBs.SaveInferredEdges(TStr::Fmt("%s-%s-%s.txt", OutFNm.CStr(), NIdsStr[0].CStr(), NIdsStr[1].CStr()));
+      }
+    } else {
+      if (NodeIdx.EqI("-1")) {
+        NIBs.SaveInferred(TStr::Fmt("%s.txt", OutFNm.CStr()));
+      } else {
+          NIBs.SaveInferred(TStr::Fmt("%s-%s-%s.txt", OutFNm.CStr(), NIdsStr[0].CStr(), NIdsStr[1].CStr()));
+      }
+    }
+    
+    // plot precision recall
+    if (PlotPrecisionRecall) {
+      TGnuPlot::PlotValV(NIBs.PrecisionRecall, TStr::Fmt("%s-precision-recall", OutFNm.CStr()), "Precision Recall", "Recall",
+                   "Precision", gpsAuto, false, gpwLinesPoints);
+    }
+
+    // plot accuracy
+    if (PlotAccuracy) {
+        TGnuPlot::PlotValV(NIBs.Accuracy, TStr::Fmt("%s-accuracy", OutFNm.CStr()), "Accuracy", "Time", "Accuracy");
+    }
+
+    // Plot MAE
+    if (PlotMAE) {
+      TGnuPlot::PlotValV(NIBs.MAE, TStr::Fmt("%s-mae", OutFNm.CStr()), "Normalized MAE", "Time", "Normalized MAE");
+    }
+
+    // Plot MSE
+    if (PlotMSE) {
+      TGnuPlot::PlotValV(NIBs.MSE, TStr::Fmt("%s-mse", OutFNm.CStr()), "MSE", "Time", "MSE");
+    }
 	
 	Catch
 	printf("hello world\n");

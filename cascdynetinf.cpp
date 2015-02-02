@@ -1239,3 +1239,129 @@ void TNIBs::GenerateGroundTruth(const int TNetwork,const int NNodes,const int NE
     printf("groundtruth nodes:%d edges:%d\n", Network.GetNodes(), Network.GetEdges());
 	return;
 }
+
+
+void TNIBs::runSG(const int& Iters, const TFltV& Steps, const TSampling& Sampling, const TStr& ParamSampling, const bool& PlotPerformance)
+{
+	
+	int oIters = 50;
+    int currentCascade = -1;
+    TIntIntH SampledCascades;
+	bool verbose = false;
+    TStrV ParamSamplingV; ParamSampling.SplitOnAllCh(';', ParamSamplingV);
+	
+	
+	for (int i=0; i < oIters; i++) {
+		
+    	for (int t=1; t<Steps.Len(); t++) {
+    	  // find cascades whose two first infections are earlier than Steps[t]
+    	  TIntFltH CascadesIdx;
+    	  int num_infections = 0;
+    	  for (int i=0; i<CascH.Len(); i++) {
+    	    if (CascH[i].LenBeforeT(Steps[t]) > 1 &&
+    	      ( (Sampling!=WIN_SAMPLING && Sampling!=WIN_EXP_SAMPLING) ||
+    	        (Sampling==WIN_SAMPLING && (Steps[t]-CascH[i].GetMinTm()) <= ParamSamplingV[0].GetFlt()) ||
+    	        (Sampling==WIN_EXP_SAMPLING && (Steps[t]-CascH[i].GetMinTm()) <= ParamSamplingV[0].GetFlt()) )) {
+    	      num_infections += CascH[i].LenBeforeT(Steps[t]);
+    	      CascadesIdx.AddDat(i) = CascH[i].GetMinTm();
+    	    }
+    	  }
+    	
+    	  // if there are not recorded cascades by Steps[t], continue
+    	  if (CascadesIdx.Len()==0) {
+    	    printf("WARNING: No cascades recorded by %f!\n", Steps[t].Val);
+    	    //if (PlotPerformance) { ComputePerformanceNId(NId, t, Steps); }
+    	    continue;
+    	  }
+    	
+    	  // later cascades first
+    	  CascadesIdx.SortByDat(false);
+    	
+    	  printf("Solving step %f: %d cascades, %d infections\n", Steps[t].Val, CascadesIdx.Len(), num_infections);
+    	  SampledCascades.Clr();
+    	
+    	  // sampling cascades with no replacement
+    	  for (int i=0; i < Iters; i++) {
+    	
+		
+	        currentCascade = TInt::Rnd.GetUniDevInt(CascadesIdx.Len());
+		
+    	    if (!SampledCascades.IsKey(currentCascade)) { SampledCascades.AddDat(currentCascade) = 0; }
+    	    SampledCascades.GetDat(currentCascade)++;
+    	
+    	    if (verbose) { printf("Cascade %d sampled!\n", currentCascade); }
+    	
+    	    // sampled cascade
+    	    TCascade &Cascade = CascH[CascadesIdx.GetKey(currentCascade)];
+    	
+    	    // update gradient and alpha's
+    	    TIntPrV AlphasToUpdate;
+    	    
+			
+			/*
+			//UpdateDiff(OSG, NId, Cascade, AlphasToUpdate, Steps[t]);
+			
+			
+    		//key function
+			
+    	    // update alpha's
+    	    for (int j=0; j<AlphasToUpdate.Len(); j++) {
+    	      if (InferredNetwork.IsEdge(AlphasToUpdate[j].Val1, AlphasToUpdate[j].Val2) &&
+    	          InferredNetwork.GetEDat(AlphasToUpdate[j].Val1, AlphasToUpdate[j].Val2).IsKey(Steps[t])
+    	        ) {
+    	        InferredNetwork.GetEDat(AlphasToUpdate[j].Val1, AlphasToUpdate[j].Val2).GetDat(Steps[t]) -=
+    	            (Gamma * AveDiffAlphas.GetDat(AlphasToUpdate[j].Val1)
+    	                - (Regularizer==1? Mu*InferredNetwork.GetEDat(AlphasToUpdate[j].Val1, AlphasToUpdate[j].Val2).GetDat(Steps[t]) : 0.0));
+    	
+    	        // project into alpha >= 0
+    	        if (InferredNetwork.GetEDat(AlphasToUpdate[j].Val1, AlphasToUpdate[j].Val2).GetDat(Steps[t]) < Tol) {
+    	          InferredNetwork.GetEDat(AlphasToUpdate[j].Val1, AlphasToUpdate[j].Val2).GetDat(Steps[t]) = Tol;
+    	        }
+    	
+    	        // project into alpha <= MaxAlpha
+    	        if (InferredNetwork.GetEDat(AlphasToUpdate[j].Val1, AlphasToUpdate[j].Val2).GetDat(Steps[t]) > MaxAlpha) {
+    	          InferredNetwork.GetEDat(AlphasToUpdate[j].Val1, AlphasToUpdate[j].Val2).GetDat(Steps[t]) = MaxAlpha;
+    	        }
+    	      }
+    	    }
+			*/
+			
+			
+			UpdateForCascade(OSG, Cascade, Steps[t]);
+			
+			
+			
+			
+    	    if (verbose) { printf("%d transmission rates updated!\n", AlphasToUpdate.Len()); }
+    	  }
+    	
+    	  printf("%d different cascades have been sampled for step %f!\n", SampledCascades.Len(), Steps[t].Val);
+    	
+    	  // For alphas that did not get updated, copy last alpha value * aging factor
+    	  int unchanged = 0;
+    	  for (TStrFltFltHNEDNet::TEdgeI EI = InferredNetwork.BegEI(); EI < InferredNetwork.EndEI(); EI++) {
+    	    if (EI().IsKey(Steps[t]) || t == 0 || !EI().IsKey(Steps[t-1])) { continue; }
+    	
+    	    EI().AddDat(Steps[t]) = Aging*EI().GetDat(Steps[t-1]);
+    	    unchanged++;
+    	  }
+    	  if (verbose) { printf("%d transmission rates that did not changed were 'aged' by %f!\n", unchanged, Aging.Val); }
+    	
+    	  // compute performance on-the-fly
+    	  //if (PlotPerformance) { ComputePerformanceNId(NId, t, Steps); }
+    	}
+	}
+
+}
+
+
+
+void TNIBs::UpdateForCascade(const TOptMethod& OptMethod, TCascade& Cascade, const double& CurrentTime)
+{
+	
+
+
+
+
+	return;
+}

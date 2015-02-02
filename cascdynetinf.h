@@ -244,6 +244,7 @@ public:
 
   // auxiliary function for optimization
   void UpdateDiff(const TOptMethod& OptMethod, const int& NId, TCascade& Cascade, TIntPrV& AlphasToUpdate, const double& CurrentTime=TFlt::Mx);
+  void UpdateForCascade(const TOptMethod& OptMethod, TCascade& Cascade, const double& CurrentTime=TFlt::Mx);
 
   // functions to compute burstiness
   void find_C( int t, TFltV &x, TFltVV &C, const int& k, const double& s, const double& gamma, const double& T );
@@ -268,6 +269,8 @@ public:
 
   // storing cascades in text format
   void SaveCascades(const TStr& OutFNm);
+  
+  void runSG(const int& Iters, const TFltV& Steps, const TSampling& Sampling, const TStr& ParamSampling, const bool& PlotPerformance = false);
 };
 
 #endif

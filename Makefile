@@ -38,7 +38,7 @@ DEPCPP = $(EXSNAPADV)/kronecker.cpp cascdynetinf.cpp
 ifeq ($(UNAME), Linux)
   # Linux flags
   CC = g++
-  CXXFLAGS += -std=c++98 -Wall
+  CXXFLAGS += -std=c++11 -Wall 
   CXXFLAGS += -O3 -DNDEBUG
   # turn on for crash debugging, get symbols with <prog> 2>&1 | c++filt
   #CXXFLAGS += -g -rdynamic
@@ -49,7 +49,7 @@ ifeq ($(UNAME), Linux)
 else ifeq ($(UNAME), Darwin)
   # OS X flags
   CC = g++
-  CXXFLAGS += -std=c++98 -Wall
+  CXXFLAGS += -std=c++11 -Wall
   CXXFLAGS += -O3 -DNDEBUG
   CXXOPENMP = -fopenmp
   CLANG := $(shell g++ -v 2>&1 | grep clang | cut -d " " -f 2)
