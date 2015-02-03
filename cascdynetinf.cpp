@@ -1266,7 +1266,13 @@ void TNIBs::GenerateGroundTruth(const int TNetwork,const int NNodes,const int NE
 	for (TNGraph::TEdgeI EI = Graph->BegEI(); EI < Graph->EndEI(); EI++)
 	{
 		TFltFltH Alphas;
-		Alphas.AddDat(0.0) = (rand()%1000)/1000.0;//0.0;
+		Alphas.AddDat(0.0) = TFlt::Rnd.GetExpDev(1.0);
+			
+			
+			//(rand()%1000)/1000.0;//0.0;
+		
+		
+		
 		//printf("edge (%d, %d)\n", EI.GetSrcNId(), EI.GetDstNId());
 		Network.AddEdge(EI.GetSrcNId(), EI.GetDstNId(),Alphas);
 	}
@@ -1473,6 +1479,7 @@ void TNIBs::UpdateForCascade(const TOptMethod& OptMethod, TCascade& Cascade, con
 		else
 		{
 			//T-T
+			if (C.NIdHitH(EI.GetDstNId()).Tm.Val - C.NIdHitH(EI.GetSrcNId()).Tm.Val > 0)
 			InferredNetwork.GetEI(EI.GetSrcNId(),EI.GetDstNId()).GetDat()(0.0)= fmax(InferredNetwork.GetEI(EI.GetSrcNId(),EI.GetDstNId()).GetDat()(0.0) - Gamma*(C.NIdHitH(EI.GetDstNId()).Tm.Val - C.NIdHitH(EI.GetSrcNId()).Tm.Val), MinAlpha);
 		}
 	}
@@ -1483,9 +1490,9 @@ void TNIBs::UpdateForCascade(const TOptMethod& OptMethod, TCascade& Cascade, con
 
 	double sum = 0.0;
     for (TStrFltFltHNEDNet::TEdgeI EI = InferredNetwork.BegEI(); EI < InferredNetwork.EndEI(); EI++) {
-    		sum += fabs(EI.GetDat()(0.0)- Network.GetEI(EI.GetSrcNId(),EI.GetDstNId()).GetDat()(0.0));
+    		sum +=(EI.GetDat()(0.0)- Network.GetEI(EI.GetSrcNId(),EI.GetDstNId()).GetDat()(0.0))*(EI.GetDat()(0.0)- Network.GetEI(EI.GetSrcNId(),EI.GetDstNId()).GetDat()(0.0));
 	}
-	printf("abs loss:%f\n",sum);
+	//printf("square loss:%f\n",sum);
 	
 	return;
 }

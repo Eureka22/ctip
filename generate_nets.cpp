@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
   const double Delta = Env.GetIfArgPrefixFlt("-d:", 1.0, "Delta for power-law (default:1)\n"); // delta for power law
 
   // num cascades, horizon per cascade & maximum time
-  const int NCascades = Env.GetIfArgPrefixInt("-c:", 1000, "Number of cascades (default:500)\n");
+  const int NCascades = Env.GetIfArgPrefixInt("-c:", 3000, "Number of cascades (default:500)\n");
   const double Window = Env.GetIfArgPrefixFlt("-h:", 10.0, "Time horizon per cascade (default:10)\n");
   const double TotalTime = Env.GetIfArgPrefixFlt("-tt:", 100.0, "Total time (default:100)\n");
 

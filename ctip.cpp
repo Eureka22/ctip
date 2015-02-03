@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
 
     const double Tol = Env.GetIfArgPrefixFlt("-tl:", 0.0005, "Tolerance (default:0.01)\n");
     const double MinAlpha = Env.GetIfArgPrefixFlt("-la:", 0.05, "Min alpha (default:0.05)\n");
-    const double MaxAlpha = Env.GetIfArgPrefixFlt("-ua:", 1, "Maximum alpha (default:100)\n");
+    const double MaxAlpha = Env.GetIfArgPrefixFlt("-ua:", 5, "Maximum alpha (default:100)\n");
     const double InitAlpha = Env.GetIfArgPrefixFlt("-ia:", 0.01, "Initial alpha (default:0.01)\n");
 
     const int SaveOnlyEdges = Env.GetIfArgPrefixInt("-oe:", 0, "Save only edges, not nodes\n:0:edges and nodes, 1:only edges (default:0)\n");
