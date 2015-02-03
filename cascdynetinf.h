@@ -260,6 +260,7 @@ public:
   void SaveInferred(const TStr& OutFNm, const TIntV& NIdV=TIntV());
   void SaveInferred(const TStr& OutFNm, const double& Step, const TIntV& NIdV=TIntV());
   void SaveInferredEdges(const TStr& OutFNm);
+  void SaveInferredNetwork(const TStr& OutFNm);
 
   // store network
   void SaveGroundTruthPajek(const TStr& OutFNm, const double& Step);

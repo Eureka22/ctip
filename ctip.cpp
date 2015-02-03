@@ -34,18 +34,18 @@ int main(int argc, char* argv[])
     const TStr NodeIdx = Env.GetIfArgPrefixStr("-ni:", "-1", "Node indeces to estimate incoming tx rates (-1:all nodes, -X:random -X-node subset)");
 
     const TOptMethod TOpt = (TOptMethod)Env.GetIfArgPrefixInt("-t:", 0, "Optimization method\n0:SG, 1:Windowed SG, 2:Exp Decay SG, 3:Windowed Exp Decay SG, 4:Ray Decay SG, 5:Batch SG, 6:Windowed Batch SG, 7:Exp Decay Batch SG, 8:Ray Decay Batch, 9:FG");
-    const int Iters  = Env.GetIfArgPrefixInt("-e:", 1000, "Number of iterations per time step");
+    const int Iters  = Env.GetIfArgPrefixInt("-e:", 2000, "Number of iterations per time step");
     const int BatchLen = Env.GetIfArgPrefixInt("-bl:", 1000, "Number of cascades for each batch, -t:2 & -t:4 (default:1000)");
     const TStr ParamSampling = Env.GetIfArgPrefixStr("-sd:", "0.1", "Params for -t:1,2 & -t:4,5 (default:0.1)\n");
 
-    const double Gamma = Env.GetIfArgPrefixFlt("-g:", 0.001, "Alpha for gradient descend (default:0.01)\n");
+    const double Gamma = Env.GetIfArgPrefixFlt("-g:", 0.00005, "Alpha for gradient descend (default:0.001)\n");
     const double Aging = Env.GetIfArgPrefixFlt("-a:", 1.0, "Aging factor for non-used edges (default:1.0)\n");
     const TRegularizer Regularizer = (TRegularizer)Env.GetIfArgPrefixInt("-r:", 0, "Regularizer\n0:no, 1:l2");
     const double Mu = Env.GetIfArgPrefixFlt("-mu:", 0.01, "Mu for regularizer (default:0.01)\n");
 
     const double Tol = Env.GetIfArgPrefixFlt("-tl:", 0.0005, "Tolerance (default:0.01)\n");
     const double MinAlpha = Env.GetIfArgPrefixFlt("-la:", 0.05, "Min alpha (default:0.05)\n");
-    const double MaxAlpha = Env.GetIfArgPrefixFlt("-ua:", 100, "Maximum alpha (default:100)\n");
+    const double MaxAlpha = Env.GetIfArgPrefixFlt("-ua:", 1, "Maximum alpha (default:100)\n");
     const double InitAlpha = Env.GetIfArgPrefixFlt("-ia:", 0.01, "Initial alpha (default:0.01)\n");
 
     const int SaveOnlyEdges = Env.GetIfArgPrefixInt("-oe:", 0, "Save only edges, not nodes\n:0:edges and nodes, 1:only edges (default:0)\n");
@@ -305,7 +305,7 @@ int main(int argc, char* argv[])
 	
 	NIBs.InferredNetwork = NIBs.Network;
 	TFltFltH Alphas;
-	Alphas.AddDat(0.0) = 1.0;
+	Alphas.AddDat(0.0) = InitAlpha;
 	// Load the ground truth backbone
     for (TStrFltFltHNEDNet::TEdgeI EI = NIBs.InferredNetwork.BegEI(); EI < NIBs.InferredNetwork.EndEI(); EI++) 
 	{
@@ -318,6 +318,9 @@ int main(int argc, char* argv[])
     }
 	
 	NIBs.runSG(Iters, Steps, UNIF_SAMPLING, ParamSampling, PlotPerformance);
+	
+	NIBs.SaveInferredNetwork(TStr::Fmt("inferred-%s.txt", OutFNm.CStr()));
+	
 	
     // Save inferred network in a file
     if (SaveOnlyEdges) {
