@@ -1,6 +1,8 @@
 #include "cascdynetinf.h"
 #include "kronecker.h"
 #include <math.h>
+#include <stack>
+#include <vector>
 void TNIBs::LoadCascadesTxt(TSIn& SIn) {
   TStr Line;
   while (!SIn.Eof()) {
@@ -1362,19 +1364,76 @@ void TNIBs::runSG(const int& Iters, const TFltV& Steps, const TSampling& Samplin
 
 void TNIBs::UpdateForCascade(const TOptMethod& OptMethod, TCascade& Cascade, const double& CurrentTime)
 {
-	TempNetwork.Clr();
 	
+	TempNetwork.Clr();
+	//Add nodes and edges from T
     TCascade &C = Cascade;
     for (THash<TInt, THitInfo>::TIter NI = C.NIdHitH.BegI(); NI < C.NIdHitH.EndI(); NI++) {
-		printf("%d,%d,%f;", NI.GetDat().Parent.Val, NI.GetDat().NId.Val, NI.GetDat().Tm.Val);
+		//printf("%d,%d,%f;", NI.GetDat().Parent.Val, NI.GetDat().NId.Val, NI.GetDat().Tm.Val);
     	
+		TempNetwork.AddNode(NI.GetDat().NId.Val,"T");
+		if (NI.GetDat().Parent.Val != -1)
+		{
+			TFltFltH Alphas;
+			Alphas.AddDat(0.0) = NI.GetDat().Tm.Val;
+			//printf("edge (%d, %d)\n", EI.GetSrcNId(), EI.GetDstNId());
+			TempNetwork.AddEdge(NI.GetDat().Parent.Val, NI.GetDat().NId.Val, Alphas);
+		}
+	}
+	//printf("\n");
+	//auto start = TempNetwork.BegNI();
+	//auto end = TempNetwork.EndNI();
+	//Add nodes and edges from G\T
+	
+	std::vector<std::pair< int ,int > > vec;
+	for (auto NT = TempNetwork.BegNI(); NT<TempNetwork.EndNI(); NT++)
+	{
+		auto NI = InferredNetwork.GetNI(NT.GetId());
+		for (auto i = 0;i < NI.GetOutDeg(); i++ )
+			vec.push_back(std::make_pair(NI.GetId(), NI.GetOutNId(i)));
+		
+		/*if (!TempNetwork.IsNode(NI.GetId()))
+			printf("error\n");
+		
+		for (auto i = 0;i < NI.GetOutDeg(); i++ )
+		{	if(!TempNetwork.IsNode(NI.GetOutNId(i))) 
+				TempNetwork.AddNode(NI.GetOutNId(i),"G");
+			
+			TFltFltH Alphas;
+			Alphas.AddDat(0.0) = 1.0;
+			//if (TempNetwork.IsNode(NI.GetId())&&TempNetwork.IsNode(NI.GetOutNId(i))) 
+			//printf("edge (%d, %d)\n", EI.GetSrcNId(), EI.GetDstNId());
+			TempNetwork.AddEdge(NI.GetId(),NI.GetOutNId(i), Alphas);
+			//printf("add\n");
+		}
+		*/
+	}
+	
+	for (auto vi:vec)
+	{
+		if(!TempNetwork.IsNode(vi.second)) 
+			TempNetwork.AddNode(vi.second,"G");
+		TFltFltH Alphas;
+		Alphas.AddDat(0.0) = CurrentTime;
+		TempNetwork.AddEdge(vi.first,vi.second, Alphas);
+	}
+	
+	
+	//for (auto NT = TempNetwork.BegNI(); NT<TempNetwork.EndNI(); NT++)
+	//printf("%d,%s\n",NT.GetId(),NT.GetDat().CStr());
+
+
+	
+	//Calculate update for all edges
+	
+	for (auto EI = TempNetwork.BegEI(); EI<TempNetwork.EndEI(); EI++)
+	{
+	
+	
 	
 	}
 	
 	
-	
-	
-	printf("\n");
 
 	return;
 }
