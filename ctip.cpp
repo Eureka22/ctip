@@ -38,14 +38,14 @@ int main(int argc, char* argv[])
     const int BatchLen = Env.GetIfArgPrefixInt("-bl:", 1000, "Number of cascades for each batch, -t:2 & -t:4 (default:1000)");
     const TStr ParamSampling = Env.GetIfArgPrefixStr("-sd:", "0.1", "Params for -t:1,2 & -t:4,5 (default:0.1)\n");
 
-    const double Gamma = Env.GetIfArgPrefixFlt("-g:", 0.00005, "Alpha for gradient descend (default:0.001)\n");
+    const double Gamma = Env.GetIfArgPrefixFlt("-g:", 0.005, "Alpha for gradient descend (default:0.001)\n");
     const double Aging = Env.GetIfArgPrefixFlt("-a:", 1.0, "Aging factor for non-used edges (default:1.0)\n");
     const TRegularizer Regularizer = (TRegularizer)Env.GetIfArgPrefixInt("-r:", 0, "Regularizer\n0:no, 1:l2");
     const double Mu = Env.GetIfArgPrefixFlt("-mu:", 0.01, "Mu for regularizer (default:0.01)\n");
 
     const double Tol = Env.GetIfArgPrefixFlt("-tl:", 0.0005, "Tolerance (default:0.01)\n");
-    const double MinAlpha = Env.GetIfArgPrefixFlt("-la:", 0.05, "Min alpha (default:0.05)\n");
-    const double MaxAlpha = Env.GetIfArgPrefixFlt("-ua:", 5, "Maximum alpha (default:100)\n");
+    const double MinAlpha = Env.GetIfArgPrefixFlt("-la:", 0.001, "Min alpha (default:0.05)\n");
+    const double MaxAlpha = Env.GetIfArgPrefixFlt("-ua:", 1, "Maximum alpha (default:100)\n");
     const double InitAlpha = Env.GetIfArgPrefixFlt("-ia:", 0.01, "Initial alpha (default:0.01)\n");
 
     const int SaveOnlyEdges = Env.GetIfArgPrefixInt("-oe:", 0, "Save only edges, not nodes\n:0:edges and nodes, 1:only edges (default:0)\n");

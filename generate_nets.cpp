@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
 
   // nodes, edges
   const int NNodes = Env.GetIfArgPrefixInt("-n:", 200, "Number of nodes (default:512)\n");
-  const int NEdges = Env.GetIfArgPrefixInt("-e:", 600, "Number of edges (default:1024)\n");
+  const int NEdges = Env.GetIfArgPrefixInt("-e:", 50, "Number of edges (default:1024)\n");
 
   // tx model, alphas and betas
   const TModel Model = (TModel)Env.GetIfArgPrefixInt("-m:", 0, "Transmission model\n0:exponential, 1:power law, 2:rayleigh, 3:weibull (default:0)\n"); // tx model
@@ -31,9 +31,9 @@ int main(int argc, char* argv[]) {
   const double Delta = Env.GetIfArgPrefixFlt("-d:", 1.0, "Delta for power-law (default:1)\n"); // delta for power law
 
   // num cascades, horizon per cascade & maximum time
-  const int NCascades = Env.GetIfArgPrefixInt("-c:", 3000, "Number of cascades (default:500)\n");
+  const int NCascades = Env.GetIfArgPrefixInt("-c:", 2000, "Number of cascades (default:500)\n");
   const double Window = Env.GetIfArgPrefixFlt("-h:", 10.0, "Time horizon per cascade (default:10)\n");
-  const double TotalTime = Env.GetIfArgPrefixFlt("-tt:", 100.0, "Total time (default:100)\n");
+  const double TotalTime = Env.GetIfArgPrefixFlt("-tt:", 10.0, "Total time (default:100)\n");
 
   // output filename
   const TStr FileName = Env.GetIfArgPrefixStr("-f:", TStr("example"), "Output name for network & cascades (default:example)\n");
