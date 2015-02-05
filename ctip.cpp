@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
     const int BatchLen = Env.GetIfArgPrefixInt("-bl:", 1000, "Number of cascades for each batch, -t:2 & -t:4 (default:1000)");
     const TStr ParamSampling = Env.GetIfArgPrefixStr("-sd:", "0.1", "Params for -t:1,2 & -t:4,5 (default:0.1)\n");
 
-    const double Gamma = Env.GetIfArgPrefixFlt("-g:", 0.005, "Alpha for gradient descend (default:0.001)\n");
+    const double Gamma = Env.GetIfArgPrefixFlt("-g:", 0.0005, "Alpha for gradient descend (default:0.001)\n");
     const double Aging = Env.GetIfArgPrefixFlt("-a:", 1.0, "Aging factor for non-used edges (default:1.0)\n");
     const TRegularizer Regularizer = (TRegularizer)Env.GetIfArgPrefixInt("-r:", 0, "Regularizer\n0:no, 1:l2");
     const double Mu = Env.GetIfArgPrefixFlt("-mu:", 0.01, "Mu for regularizer (default:0.01)\n");

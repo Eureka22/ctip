@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
   const double Delta = Env.GetIfArgPrefixFlt("-d:", 1.0, "Delta for power-law (default:1)\n"); // delta for power law
   const double k = Env.GetIfArgPrefixFlt("-k:", 1.0, "Shape parameter k for Weibull distribution for -m:3 (default:1)\n"); // k for weibull
 
-  const TRunningMode RunningMode = (TRunningMode)Env.GetIfArgPrefixInt("-rm:", 0,"Running mode\n0:Time step, 1:Infections step, 2:Cascade step, 3:Single time point\n");
+  const TRunningMode RunningMode = (TRunningMode)Env.GetIfArgPrefixInt("-rm:", 3,"Running mode\n0:Time step, 1:Infections step, 2:Cascade step, 3:Single time point\n");
   const double TimeStep = Env.GetIfArgPrefixFlt("-ts:", 10.0, "Minimum time step size for -rm:0 (default:10.0)\n");
   const int NumberInfections = Env.GetIfArgPrefixInt("-is:", -1, "Number of infections for -rm:1  (default:-1)\n");
 
@@ -271,6 +271,15 @@ int main(int argc, char* argv[]) {
         default :
           FailR("Bad -s: parameter.");
     }
+	
+	double sum = 0.0;
+    for (TStrFltFltHNEDNet::TEdgeI EI = NIBs.Network.BegEI(); EI < NIBs.Network.EndEI(); EI++) {
+		double predict = NIBs.InferredNetwork.IsEdge(EI.GetSrcNId(),EI.GetDstNId()) ? double(NIBs.InferredNetwork.GetEI(EI.GetSrcNId(),EI.GetDstNId()).GetDat()(Steps[1])) : 0.0;
+		double truth = EI.GetDat()(0.0);
+		//printf("%f,%f\n", predict, truth);
+		sum += (predict- truth)*(predict- truth);
+	}
+	printf("expected mean square error:%f\n",sum/NIBs.Network.GetEdges());
   }
 
   // Save inferred network in a file

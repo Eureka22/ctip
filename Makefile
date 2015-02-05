@@ -33,6 +33,7 @@ GEN = generate_nets
 DEPH =  $(EXSNAPADV)/kronecker.h
 DEPCPP = $(EXSNAPADV)/kronecker.cpp cascdynetinf.cpp
 
+BASELINE = infopath
 
 
 ifeq ($(UNAME), Linux)
@@ -80,18 +81,19 @@ endif
 # Makefile for non-Microsoft compilers
 #
 
-all: $(MAIN) $(GEN)
+all: $(MAIN) $(GEN) $(BASELINE)
 
 # COMPILE
 $(MAIN): $(MAIN).cpp $(DEPH) $(DEPCPP) $(EXSNAP)/Snap.o 
 	$(CC) $(CXXFLAGS) -o $(MAIN) $(MAIN).cpp $(DEPCPP) $(EXSNAP)/Snap.o -I$(EXSNAP) -I$(EXSNAPADV) -I$(EXGLIB) -I$(EXSNAPEXP) $(LDFLAGS) $(LIBS)
 
 
-
-
 $(GEN): $(GEN).cpp $(DEPH) $(DEPCPP) $(EXSNAP)/Snap.o 
 	$(CC) $(CXXFLAGS) -o $(GEN) $(GEN).cpp $(DEPCPP) $(EXSNAP)/Snap.o -I$(EXSNAP) -I$(EXSNAPADV) -I$(EXGLIB) -I$(EXSNAPEXP) $(LDFLAGS) $(LIBS)
 
+
+$(BASELINE): $(BASELINE).cpp $(DEPH) $(DEPCPP) $(EXSNAP)/Snap.o 
+	$(CC) $(CXXFLAGS) -o $(BASELINE) $(BASELINE).cpp $(DEPCPP) $(EXSNAP)/Snap.o -I$(EXSNAP) -I$(EXSNAPADV) -I$(EXGLIB) -I$(EXSNAPEXP) $(LDFLAGS) $(LIBS)
 
 
 
