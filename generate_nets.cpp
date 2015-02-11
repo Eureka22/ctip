@@ -32,8 +32,8 @@ int main(int argc, char* argv[]) {
 
   // num cascades, horizon per cascade & maximum time
   const int NCascades = Env.GetIfArgPrefixInt("-c:", 5000, "Number of cascades (default:500)\n");
-  const double Window = Env.GetIfArgPrefixFlt("-h:", 10.0, "Time horizon per cascade (default:10)\n");
-  const double TotalTime = Env.GetIfArgPrefixFlt("-tt:", 10.0, "Total time (default:100)\n");
+  const double Window = Env.GetIfArgPrefixFlt("-h:", 40.0, "Time horizon per cascade (default:10)\n");
+  const double TotalTime = Env.GetIfArgPrefixFlt("-tt:", 40.0, "Total time (default:100)\n");
 
   // output filename
   const TStr FileName = Env.GetIfArgPrefixStr("-f:", TStr("example"), "Output name for network & cascades (default:example)\n");

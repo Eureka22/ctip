@@ -251,6 +251,7 @@ void TNIBs::GenCascade(TCascade& C) {
         case EXP:
           // exponential with alpha parameter
           sigmaT = TInt::Rnd.GetExpDev(alpha);
+		  //printf("sigma T, %f\n",sigmaT);
           break;
         case POW:
           // power-law with alpha parameter
@@ -269,7 +270,7 @@ void TNIBs::GenCascade(TCascade& C) {
         IAssert(sigmaT >= 0);
 
         double t1 = TFlt::GetMn(GlobalTime + sigmaT, TFlt::GetMn(InitTime+Window, TotalTime));
-
+		//printf("t1:%f\n",t1);
         if (InfectedNIdH.IsKey(DstNId)) {
           double t2 = InfectedNIdH.GetDat(DstNId);
           if ( t2 > t1 && t2 < TFlt::GetMn(InitTime+Window, TotalTime)) {
@@ -1266,7 +1267,8 @@ void TNIBs::GenerateGroundTruth(const int TNetwork,const int NNodes,const int NE
 	for (TNGraph::TEdgeI EI = Graph->BegEI(); EI < Graph->EndEI(); EI++)
 	{
 		TFltFltH Alphas;
-		Alphas.AddDat(0.0) = TFlt::Rnd.GetUniDevInt(10000)/10000.0;
+		//Alphas.AddDat(0.0) = 0.5;// TFlt::Rnd.GetUniDevInt(10000)/10000.0;
+		Alphas.AddDat(0.0) = TFlt::GetMx(TFlt::GetMn( TFlt::Rnd.GetExpDev(5), 1),0.01);
 		
 		//printf("edge (%d, %d)\n", EI.GetSrcNId(), EI.GetDstNId());
 		Network.AddEdge(EI.GetSrcNId(), EI.GetDstNId(),Alphas);
@@ -1590,67 +1592,7 @@ void TNIBs::UpdateForCascade2(const TOptMethod& OptMethod, TCascade& Cascade, co
 	}
 	
 	
-		//Calculate update for all edges
-	for (auto EI = TempNetwork.BegEI(); EI<TempNetwork.EndEI(); EI++)
-	{
-		//printf("%d%s,%d%s,%f,%d\n",EI.GetSrcNId(),TempNetwork.GetNI(EI.GetSrcNId()).GetDat().CStr(),EI.GetDstNId(),TempNetwork.GetNI(EI.GetDstNId()).GetDat().CStr(),C.NIdHitH(EI.GetDstNId()).Tm.Val, C.NIdHitH(EI.GetDstNId()).Tm.Val>0);
-		if (EI.GetDstNDat() == "T" )
-		{
-			if (C.NIdHitH(EI.GetDstNId()).Parent.Val == EI.GetSrcNId())
-			{
-				//\in T
-				if (InferredNetwork.IsEdge(EI.GetSrcNId(),EI.GetDstNId()))
-					InferredNetwork.GetEI(EI.GetSrcNId(),EI.GetDstNId()).GetDat()(0.0)= fmin(InferredNetwork.GetEI(EI.GetSrcNId(),EI.GetDstNId()).GetDat()(0.0) + Gamma*1/InferredNetwork.GetEI(EI.GetSrcNId(),EI.GetDstNId()).GetDat()(0.0) - Gamma*(C.NIdHitH(EI.GetDstNId()).Tm.Val - C.NIdHitH(EI.GetSrcNId()).Tm.Val),MaxAlpha);
-				else
-					printf("%d -> %d not an edge in T->T\n", EI.GetSrcNId(),EI.GetDstNId());
-				//printf("add%f\n", Gamma*1/InferredNetwork.GetEI(EI.GetSrcNId(),EI.GetDstNId()).GetDat()(0.0) - Gamma*(C.NIdHitH(EI.GetDstNId()).Tm.Val - C.NIdHitH(EI.GetSrcNId()).Tm.Val));
-				//printf("1");
-			}
-			else
-			{
-				if (C.NIdHitH(EI.GetDstNId()).Tm.Val - C.NIdHitH(EI.GetSrcNId()).Tm.Val > 0)
-				{
-					//if (InferredNetwork.IsEdge(EI.GetSrcNId(),EI.GetDstNId()))
-					//	InferredNetwork.GetEI(EI.GetSrcNId(),EI.GetDstNId()).GetDat()(0.0)= fmax(InferredNetwork.GetEI(EI.GetSrcNId(),EI.GetDstNId()).GetDat()(0.0) - Gamma*(C.NIdHitH(EI.GetDstNId()).Tm.Val - C.NIdHitH(EI.GetSrcNId()).Tm.Val), MinAlpha);
-					//else
-					//printf("%d -> %d not an edge in T->..T\n", EI.GetSrcNId(),EI.GetDstNId());
-					//printf("2");
-				}
-			}
-		
-		}
-		else // (EI.GetDstNDat() == "G" )
-		{
-			////T-G
-			//if (InferredNetwork.IsEdge(EI.GetSrcNId(),EI.GetDstNId()))
-			//	InferredNetwork.GetEI(EI.GetSrcNId(),EI.GetDstNId()).GetDat()(0.0)= fmax(InferredNetwork.GetEI(EI.GetSrcNId(),EI.GetDstNId()).GetDat()(0.0) -  Gamma*(CurrentTime - C.NIdHitH(EI.GetSrcNId()).Tm.Val), MinAlpha);
-			//else
-			//	printf("%d -> %d not an edge in T-G\n", EI.GetSrcNId(),EI.GetDstNId());
-			////printf("3");
-		}
-		
-	}
-	//printf("%d edges updated!\n",TempNetwork.GetEdges());
-	
-	//for (auto NT = TempNetwork.BegNI(); NT<TempNetwork.EndNI(); NT++)
-	//printf("%d,%s\n",NT.GetId(),NT.GetDat().CStr());
-	
-	//double sum = 0.0;
-    //for (TStrFltFltHNEDNet::TEdgeI EI = InferredNetwork.BegEI(); EI < InferredNetwork.EndEI(); EI++) {
-    //		sum +=(EI.GetDat()(0.0)- Network.GetEI(EI.GetSrcNId(),EI.GetDstNId()).GetDat()(0.0))*(EI.GetDat()(0.0)- Network.GetEI(EI.GetSrcNId(),EI.GetDstNId()).GetDat()(0.0));		
-	//	}
-	//printf("expected mean square error:%f\n",sum/InferredNetwork.GetEdges());
-	//
-	/*
-	int corr = 0;
-	if (TInt::Rnd.GetUniDevInt()%40 == 5)
-	{
-    	for (TStrFltFltHNEDNet::TEdgeI EI = InferredNetwork.BegEI(); EI < InferredNetwork.EndEI(); EI++) 
-			for (auto EJ = InferredNetwork.BegEI(); EJ<EI; EJ++)
-				corr +=(EI.GetDat()(0.0) < EJ.GetDat()(0.0))*(Network.GetEI(EI.GetSrcNId(),EI.GetDstNId()).GetDat()(0.0) < Network.GetEI(EJ.GetSrcNId(),EJ.GetDstNId()).GetDat()(0.0)) + (EI.GetDat()(0.0)>EJ.GetDat()(0.0))*(Network.GetEI(EI.GetSrcNId(),EI.GetDstNId()).GetDat()(0.0) > Network.GetEI(EJ.GetSrcNId(),EJ.GetDstNId()).GetDat()(0.0)) -  (EI.GetDat()(0.0)>EJ.GetDat()(0.0))*(Network.GetEI(EI.GetSrcNId(),EI.GetDstNId()).GetDat()(0.0) < Network.GetEI(EJ.GetSrcNId(),EJ.GetDstNId()).GetDat()(0.0)) - (EI.GetDat()(0.0) < EJ.GetDat()(0.0))*(Network.GetEI(EI.GetSrcNId(),EI.GetDstNId()).GetDat()(0.0) > Network.GetEI(EJ.GetSrcNId(),EJ.GetDstNId()).GetDat()(0.0));
-		printf("rank corr:%f\n", corr*2/double(InferredNetwork.GetEdges()*(InferredNetwork.GetEdges()+1)));
-	}
-	*/
+
 	Catch
 	return;
 }
