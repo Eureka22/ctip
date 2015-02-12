@@ -2,7 +2,8 @@
 #define snap_cascdynetinf_h
 
 #include "Snap.h"
-
+#undef min
+#undef max
 // pairwise transmission models
 typedef enum {
   EXP, // exponential
@@ -141,7 +142,7 @@ public:
   // network
   TStrFltFltHNEDNet Network;
   TStrFltFltHNEDNet TempNetwork;
-  
+
   // pairwise transmission model
   TModel Model;
 
@@ -207,9 +208,9 @@ public:
   void AddCasc(const TCascade& Cascade) { CascH.AddDat(Cascade.CId) = Cascade; }
   void AddCasc(const TIntFltH& Cascade, const int& CId=-1, const TModel& Model=EXP);
   void GenCascade(TCascade& C);
-  
+
   void GenerateGroundTruth(const int TNetwork,const int NNodes,const int NEdges,const TStr NetworkParams);
-  
+
   bool IsCascade(int c) { return CascH.IsKey(c); }
   TCascade & GetCasc(int c) { return CascH.GetDat(c); }
   int GetCascs() { return CascH.Len(); }
@@ -272,7 +273,7 @@ public:
 
   // storing cascades in text format
   void SaveCascades(const TStr& OutFNm);
-  
+
   void runSG(const int& Iters, const TFltV& Steps, const TSampling& Sampling, const TStr& ParamSampling, const bool& PlotPerformance = false);
 };
 

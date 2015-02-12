@@ -2,7 +2,8 @@
 #include "Snap.h"
 #include "cascdynetinf.h"
 
-
+#undef min
+#undef max
 int main(int argc, char* argv[])
 {
     Env = TEnv(argc, argv, TNotify::StdNotify);
@@ -53,11 +54,11 @@ int main(int argc, char* argv[])
     const int TakeAdditional = Env.GetIfArgPrefixInt("-s:", 1, "How much additional files to create?\n\
       0:no plots, 1:precision-recall plot, 2:accuracy plot, 3:mae plot, 4:mse plot, 5:all plots\n");
 
-    bool PlotPrecisionRecall = false; 
+    bool PlotPrecisionRecall = false;
     bool PlotAccuracy = false;
     bool PlotMAE = false;
     bool PlotMSE = false;
-  
+
     bool PlotPerformance = false;
 
     switch (TakeAdditional) {
@@ -69,10 +70,10 @@ int main(int argc, char* argv[])
        case 5 :
          PlotPrecisionRecall = true;
          PlotAccuracy = true;
-         PlotMAE = true; 
+         PlotMAE = true;
          PlotMSE = true;
          break;
-       default: 
+       default:
            FailR("Bad -s: parameter.");
     }
 
@@ -97,7 +98,7 @@ int main(int argc, char* argv[])
     // load cascades from file
     TFIn FIn(InFNm);
     NIBs.LoadCascadesTxt(FIn);
-	
+
     // load ground truth network
     if (PlotPrecisionRecall || PlotAccuracy || PlotMAE || PlotMSE) {
       TFIn FGIn(GroundTruthFNm);
@@ -105,9 +106,9 @@ int main(int argc, char* argv[])
     } else {
       for (THash<TInt, TNodeInfo>::TIter NI = NIBs.NodeNmH.BegI(); NI<NIBs.NodeNmH.EndI(); NI++) { NIBs.Network.AddNode(NI.GetKey()); }
     }
-	
-	
-	
+
+
+
     double MaxTime = TFlt::Mn;
     double MinTime = TFlt::Mx;
 
@@ -153,17 +154,17 @@ int main(int argc, char* argv[])
           default: FailR("Bad -s: parameter.");
       }
     }
-	
+
 	printf("Total %d cascades, Maxtime:%f, Mintime:%f\n", NIBs.GetCascs(), MaxTime, MinTime);
-	
-	
+
+
     TFltV Steps;
     int num_infections = 0;
     TFltV InfectionsV;
 
     // we always add 0.0 as starting point
     Steps.Add(MinTime);
-	
+
 
     // compute number of time points to compute estimation for each running mode
     switch (RunningMode) {
@@ -213,7 +214,7 @@ int main(int argc, char* argv[])
         FailR("Bad -rm: parameter.");
 
     }
-  
+
 
     // save time steps
     TFOut FOutTimeSteps(TStr::Fmt("%s-time-steps.txt", OutFNm.CStr()));
@@ -229,17 +230,17 @@ int main(int argc, char* argv[])
         NIds.Add(NIBs.NodeNmH.GetKey(i));
       }
     }
-	
-	
-	
+
+
+
 	//Start Inferring
-	
-	
-	
-	
-	
-/*	
-	
+
+
+
+
+
+/*
+
     for (int i=0; i<NIds.Len(); i++) {
       TStrFltFltHNEDNet::TNodeI NI = NIBs.Network.GetNI(NIds[i]);
       switch (TOpt) {
@@ -288,26 +289,26 @@ int main(int argc, char* argv[])
             FailR("Bad -s: parameter.");
       }
     }
-	
+
 */
-	
-		
+
+
 /*    for (int i=0; i<NIds.Len(); i++) {
       TStrFltFltHNEDNet::TNodeI NI = NIBs.Network.GetNI(NIds[i]);
       // stochastic gradient
       NIBs.SG(NI.GetId(), Iters, Steps, UNIF_SAMPLING, ParamSampling, PlotPerformance);
     }
 */
-	
-	//Run SG node-wise	
-	
+
+	//Run SG node-wise
+
 	//Run SG Globally
-	
+
 	NIBs.InferredNetwork = NIBs.Network;
 	TFltFltH Alphas;
 	Alphas.AddDat(0.0) = InitAlpha;
 	// Load the ground truth backbone
-    for (TStrFltFltHNEDNet::TEdgeI EI = NIBs.InferredNetwork.BegEI(); EI < NIBs.InferredNetwork.EndEI(); EI++) 
+    for (TStrFltFltHNEDNet::TEdgeI EI = NIBs.InferredNetwork.BegEI(); EI < NIBs.InferredNetwork.EndEI(); EI++)
 	{
 		//if (!NodeNmH.IsKey(EI.GetSrcNId()) || !NodeNmH.IsKey(EI.GetDstNId())) { continue; }
         //not allowing self loops in the Kronecker network
@@ -316,12 +317,12 @@ int main(int argc, char* argv[])
 		NIBs.InferredNetwork.GetEDat( EI.GetSrcNId(), EI.GetDstNId(), getAlphas);
 		printf("%d,%d,%f,%f\n", EI.GetSrcNId(), EI.GetDstNId(), EI().GetKey(0).Val, EI()[0].Val);
     }
-	
+
 	NIBs.runSG(Iters, Steps, UNIF_SAMPLING, ParamSampling, PlotPerformance);
-	
+
 	NIBs.SaveInferredNetwork(TStr::Fmt("inferred-%s.txt", OutFNm.CStr()));
-	
-	
+
+
     // Save inferred network in a file
     if (SaveOnlyEdges) {
       if (NodeIdx.EqI("-1")) {
@@ -336,7 +337,7 @@ int main(int argc, char* argv[])
           NIBs.SaveInferred(TStr::Fmt("%s-%s-%s.txt", OutFNm.CStr(), NIdsStr[0].CStr(), NIdsStr[1].CStr()));
       }
     }
-    
+
     // plot precision recall
     if (PlotPrecisionRecall) {
       TGnuPlot::PlotValV(NIBs.PrecisionRecall, TStr::Fmt("%s-precision-recall", OutFNm.CStr()), "Precision Recall", "Recall",
@@ -357,7 +358,7 @@ int main(int argc, char* argv[])
     if (PlotMSE) {
       TGnuPlot::PlotValV(NIBs.MSE, TStr::Fmt("%s-mse", OutFNm.CStr()), "MSE", "Time", "MSE");
     }
-	
+
 	Catch
 	printf("hello world\n");
 	return 0;
