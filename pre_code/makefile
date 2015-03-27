@@ -1,7 +1,7 @@
 CC=g++
 CFLAGS=-c -Wall --std=c++11 -g -ggdb  
 LDFLAGS=
-SOURCES=Main.cpp Data.cpp Util.cpp Model.cpp Sampler.cpp 
+SOURCES=Main.cpp Data2.cpp Util.cpp Model.cpp Sampler.cpp 
 OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=main
 

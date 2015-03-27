@@ -1,5 +1,5 @@
 #include "Util.h"
-#include "Data.h"
+#include "Data2.h"
 #include "Sampler.h"
 #include <sstream>
 #include <cstdio>
@@ -36,6 +36,7 @@ int     Sampler::SampleHotPost(int topK)
     {
         Post* post = dataLoader -> postList[i];
         int sid = dataLoader -> GetSourceId(post -> sourcePost -> id);
+        //printf("%d",sid);
         if (sid == -1)
         {
             error ++;
@@ -45,7 +46,11 @@ int     Sampler::SampleHotPost(int topK)
         {
             countList.push_back(make_pair(dataLoader -> sourceList[j], 0));
         }
-        countList[sid].second ++;
+        if (post->sourcePost != post->repostFrom)
+        {
+           // printf("sp%d rp%d \n",post->sourcePost,post->repostFrom);
+            countList[sid].second ++;
+        }
     }
     if (error > 0)
         printf("Can not find %d source posts!\n", error);

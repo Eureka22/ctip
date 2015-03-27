@@ -1,5 +1,5 @@
 #include "Util.h"
-#include "Data.h"
+#include "Data2.h"
 #include "Sampler.h"
 #include "Model.h"
 
@@ -11,7 +11,7 @@ using namespace std;
 
 int     main()
 {
-    int TIME_STEP = 600; // m: 60, h: 3600
+    int TIME_STEP = 3600; // m: 60, h: 3600
     string NETWORK_FILE_DIR = "/mnt/hd2/Tencent_Follow_data/Tencent_Follow_data/";
     string DIFFUSION_FILE_DIR = "/mnt/hd2/Tencent_Retweet_Data/Tencent_Retweet_Data/";
     //string DIFFUSION_FILE_DIR = "hot_posts5.txt";

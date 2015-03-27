@@ -1,5 +1,5 @@
 #include "Util.h"
-#include "Data.h"
+#include "Data2.h"
 
 #include <algorithm>
 #include <sstream>
@@ -265,8 +265,8 @@ int         DataLoader::LoadData(string networkFile, string postFile)
     //LoadDiffusion("retweet.txt");
     //LoadNetwork("/home/yang/projects/role-aware/data/tencent/network/10percentage_network.txt");
     //return 0;
-    int D = 1;
-    int F = 1;
+    int D = 4;
+    int F = 30;
     //int N = 2028;
     int N = 10;
     newInputs.clear();
@@ -307,7 +307,8 @@ int         DataLoader::LoadData(string networkFile, string postFile)
     fclose(fout2);
     */
 
-    for (int i = 0; i <= F; i ++)
+
+    for (int i = 0; i <= F ; i ++)
     {
         string tmp = Util::Int2Str(i);
         if (i < 1000)
